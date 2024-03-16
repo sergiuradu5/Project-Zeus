@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { BE_signIn, BE_signUp } from "../backend/queries";
+import { useAppDispatch } from "../hooks/redux-hooks";
 import Button from "./UI/Button";
 import Input from "./UI/Input";
 
@@ -8,13 +11,25 @@ const Login = (props: LoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [signUpLoading, setSignUpLoading] = useState(false);
+  const [signInLoading, setSignInLoading] = useState(false);
+  const goTo = useNavigate();
+  const dispatch = useAppDispatch();
 
-  function handleSignup() {
+  async function handleSignup() {
     const data = { email, password, confirmPassword };
+    BE_signUp(data, setSignUpLoading, goTo, dispatch, resetForm);
   }
 
-  function handleSignin() {
+  async function handleSignin() {
     const data = { email, password };
+    BE_signIn(data, setSignInLoading, goTo, dispatch, resetForm);
+  }
+
+  function resetForm() {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
   }
 
   function handleToggleMode() {
@@ -48,14 +63,18 @@ const Login = (props: LoginProps) => {
         )}
         {login ? (
           <>
-            <Button onClick={handleSignin}>Login</Button>
+            <Button loading={signInLoading} onClick={handleSignin}>
+              Login
+            </Button>
             <Button secondary onClick={() => handleToggleMode()}>
               Switch to Register
             </Button>
           </>
         ) : (
           <>
-            <Button onClick={handleSignup}>Register</Button>
+            <Button loading={signUpLoading} onClick={handleSignup}>
+              Register
+            </Button>
             <Button secondary onClick={() => handleToggleMode()}>
               Switch to Login
             </Button>
