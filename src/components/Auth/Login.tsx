@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BE_signIn, BE_signUp } from "../backend/queries";
-import { useAppDispatch } from "../hooks/redux-hooks";
-import Button from "./UI/Button";
-import Input from "./UI/Input";
+import { BE_signIn, BE_signUp } from "../../backend/queries";
+import { useAppDispatch } from "../../hooks/redux-hooks";
+import Button from "../UI/Button";
+import Input from "../UI/Input";
 
 type LoginProps = {};
 const Login = (props: LoginProps) => {

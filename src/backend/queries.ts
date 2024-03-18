@@ -1,6 +1,7 @@
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut,
 } from "firebase/auth";
 import {
   doc,
@@ -19,7 +20,12 @@ import convertTime from "../utils/convert-time";
 import { generateAvatarImgLink } from "../utils/generate-avatar";
 import { toastErr, toastSucc } from "../utils/toast";
 import { SetIsLoadingType } from "./../types/set-is-loading-type";
-import { auth, db, usersColl } from "./firebase";
+import { auth, db } from "./firebase";
+import { FIREBASE_USERS_COLL } from "./firebase-constants";
+import {
+  removeStorageUser,
+  getStorageUser,
+} from "../local-storage/local-storage-functions";
 
 export const BE_signUp = async (
   { email, password, confirmPassword }: AuthDataType,
@@ -85,13 +91,34 @@ export const BE_signIn = async (
       setIsLoading(false);
 
       dispatch(setUser(userInfo));
-      goTo("/dashboard");
       resetForm();
+      goTo("/dashboard");
       // ...
     })
     .catch((error) => {
       CatchError(error);
       setIsLoading(false);
+    });
+};
+
+export const BE_signOut = async (
+  dispatch: AppDispatch,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  goTo: NavigateFunction
+) => {
+  setLoading(true);
+  signOut(auth)
+    .then(async () => {
+      await updateUserInfo({ isOnline: false });
+      dispatch(setUser(defaultUser));
+      removeStorageUser();
+      goTo("/auth");
+      setLoading(false);
+      toastSucc("Sign out successful");
+    })
+    .catch((e) => {
+      setLoading(false);
+      toastErr(e);
     });
 };
 
@@ -106,7 +133,7 @@ const addUserToCollection = async ({
   username: string;
   img: string;
 }) => {
-  await setDoc(doc(db, usersColl, id), {
+  await setDoc(doc(db, FIREBASE_USERS_COLL, id), {
     isOnline: true,
     email,
     username,
@@ -120,7 +147,7 @@ const addUserToCollection = async ({
 };
 
 const getUserInfo = async (id: string): Promise<UserType> => {
-  const user = await getDoc(doc(db, usersColl, id));
+  const user = await getDoc(doc(db, FIREBASE_USERS_COLL, id));
 
   if (user.exists()) {
     const { img, isOnline, username, email, bio, creationTime, lastSeen } =
@@ -150,7 +177,7 @@ const updateUserInfo = async ({
   img,
   isOnline,
 }: {
-  id: string;
+  id?: string;
   username?: string;
   img?: string;
   isOnline?: boolean;
@@ -162,11 +189,11 @@ const updateUserInfo = async ({
     lastSeen: serverTimestamp(),
   };
 
-  await updateDoc(doc(db, usersColl, id), updateValues);
-};
+  if (!id) {
+    const fetchedId: string | undefined = getStorageUser()?.id;
+    if (!fetchedId) throw new Error("Update action failed: id not found");
+    id = fetchedId;
+  }
 
-const getStorageUser = (): UserType | null => {
-  const user = localStorage.getItem("user");
-  if (user) return JSON.parse(user);
-  else return null;
+  await updateDoc(doc(db, FIREBASE_USERS_COLL, id), updateValues);
 };

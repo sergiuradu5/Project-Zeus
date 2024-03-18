@@ -15,7 +15,9 @@ export default {
     extend: {
       colors: {
         myBlue: "#0A32B3",
+        myBlueDark: "#082481",
         myPink: "#BD365D",
+        myPinkDark: "#701E35",
       },
       backgroundImage: {
         pattern:

@@ -1,4 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { LOCAL_STORAGE_USER_ITEM } from "../../local-storage/local-storage-constants";
+import { getStorageUser } from "../../local-storage/local-storage-functions";
 import { UserType } from "../../types/user-type";
 import { signInThunk } from "./user-actions";
 
@@ -18,10 +20,17 @@ type UserState = {
   currentUser: UserType;
 };
 
+const initializeCurrentUserFromStorage = (): UserType => {
+  const userFromStorage = getStorageUser();
+  if (userFromStorage) {
+    return userFromStorage;
+  }
+  return defaultUser;
+};
+
 const initialState: UserState = {
   users: [],
-  currentUser: defaultUser,
-  // currentSelectedUser: null
+  currentUser: initializeCurrentUserFromStorage(),
 };
 
 export const userSlice = createSlice({
@@ -31,7 +40,7 @@ export const userSlice = createSlice({
     setUser: (state, action: PayloadAction<UserType>) => {
       const user = action.payload;
 
-      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem(LOCAL_STORAGE_USER_ITEM, JSON.stringify(user));
 
       state.currentUser = action.payload;
     },

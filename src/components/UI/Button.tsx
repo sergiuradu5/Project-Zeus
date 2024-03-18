@@ -16,8 +16,11 @@ const Button = ({
     <button
       className={`flex flex-row justify-center items-center gap-3 py-2 px-9 rounded-full text-white border-2 border-white transition-all
       hover:drop-shadow-lg
-      hover:bg-myPink
-      ${secondary ? "bg-myPink" : "bg-myBlue"}
+      ${
+        secondary
+          ? "bg-myPink hover:bg-myPinkDark"
+          : "bg-myBlue hover:bg-myBlueDark"
+      }
       ${loading ? "cursor-wait" : ""}
       ${className}`}
       disabled={loading}

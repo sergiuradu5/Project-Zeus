@@ -1,4 +1,4 @@
-import Login from "../components/Login";
+import Login from "../components/Auth/Login";
 import Background from "../components/UI/Background";
 
 type LoginPageProps = {};

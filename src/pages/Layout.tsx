@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import Header from "../components/UI/Header";
+import Header from "../components/Header/Header";
 
 type LayoutProps = {};
 const Layout = (props: LayoutProps) => {

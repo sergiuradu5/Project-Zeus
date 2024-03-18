@@ -1,6 +1,6 @@
 import { ComponentPropsWithoutRef } from "react";
 
-type SpinnerProps = {} & ComponentPropsWithoutRef<"div">;
+type SpinnerProps = ComponentPropsWithoutRef<"div">;
 const Spinner = (props: SpinnerProps) => {
   return (
     <div

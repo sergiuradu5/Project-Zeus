@@ -21,12 +21,5 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firestore
 export const db = getFirestore(app);
 
-// Firestore Collections
-export const usersColl = "users";
-export const tasksColl = "tasks";
-export const tasksListColl = "tasksList";
-export const messagesColl = "messages";
-export const chatsColl = "chats";
-
 // Initialize Authentication
 export const auth = getAuth(app);
