@@ -1,7 +1,8 @@
 import { ComponentPropsWithoutRef } from "react";
 import { IconType } from "react-icons";
-import themeConstants from "../../theme/theme-constants";
 import { Link } from "react-router-dom";
+import themeConstants from "../../theme/theme-constants";
+import Spinner from "./Spinner";
 
 type IconProps = {
   IconName: IconType;
@@ -35,18 +36,18 @@ const Icon = ({
   const renderComponent = (
     <button
       disabled={loading}
-      className={`relative p-3 rounded-full cursor-pointer hover:bg-myBlueDark
+      className={`relative p-3 rounded-full cursor-pointer transition-all
   ${
     reduceOpacityOnHover
-      ? "hover:bg-opacity-3o"
-      : "bg-myBlue text-white border-2 border-white hover:drop-shadow-lg"
+      ? "hover:opacity-70 hover:bg-myBlueDark hover:bg-opacity-20"
+      : "bg-myBlue hover:bg-myBlueDark text-white border-2 border-white hover:drop-shadow-lg"
   }
   ${loading && "cursor-wait"}
   ${className}`}
       {...otherProps}
     >
       {loading ? (
-        "Loading"
+        <Spinner />
       ) : (
         <div>
           {iconComponent}

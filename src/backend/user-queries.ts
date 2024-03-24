@@ -11,25 +11,26 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { NavigateFunction } from "react-router-dom";
+import {
+  getStorageUser,
+  removeStorageUser,
+} from "../local-storage/local-storage-functions";
 import { AppDispatch } from "../store/store";
+import { clearTaskLists } from "../store/tasks/task-list-slice";
 import { defaultUser, setUser } from "../store/user/user-slice";
 import { AuthDataType } from "../types/auth-data-type";
+import { SetLoadingType } from "../types/set-loading-type";
 import { UserType } from "../types/user-type";
 import { CatchError } from "../utils/catch-error";
 import convertTime from "../utils/convert-time";
 import { generateAvatarImgLink } from "../utils/generate-avatar";
 import { toastErr, toastSucc } from "../utils/toast";
-import { SetIsLoadingType } from "./../types/set-is-loading-type";
 import { auth, db } from "./firebase";
 import { FIREBASE_USERS_COLL } from "./firebase-constants";
-import {
-  removeStorageUser,
-  getStorageUser,
-} from "../local-storage/local-storage-functions";
 
 export const BE_signUp = async (
   { email, password, confirmPassword }: AuthDataType,
-  setIsLoading: SetIsLoadingType,
+  setIsLoading: SetLoadingType,
   goTo: NavigateFunction,
   dispatch: AppDispatch,
   resetForm: () => void
@@ -75,7 +76,7 @@ export const BE_signUp = async (
 
 export const BE_signIn = async (
   { email, password }: AuthDataType,
-  setIsLoading: SetIsLoadingType,
+  setIsLoading: SetLoadingType,
   goTo: NavigateFunction,
   dispatch: AppDispatch,
   resetForm: () => void
@@ -111,6 +112,7 @@ export const BE_signOut = async (
     .then(async () => {
       await updateUserInfo({ isOnline: false });
       dispatch(setUser(defaultUser));
+      dispatch(clearTaskLists());
       removeStorageUser();
       goTo("/auth");
       setLoading(false);

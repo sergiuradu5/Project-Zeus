@@ -8,9 +8,9 @@ const UserHeaderProfile = ({ user, onClick }: UserHeaderProfileProps) => {
   return (
     <div
       onClick={onClick}
-      className="relative flex items-center space-x-3 cursor-pointer"
+      className="z-10 relative flex items-center space-x-3 cursor-pointer"
     >
-      <div className="relative">
+      <div className="z-10 relative">
         <img
           src={user.img}
           alt="User profile image"
@@ -18,7 +18,7 @@ const UserHeaderProfile = ({ user, onClick }: UserHeaderProfileProps) => {
         />
         <span className="top-0 right-0 absolute h-3 w-3 border-2 rounded-full border-gray-800 bg-green-400" />
       </div>
-      <div className="relative flex flex-col items-left">
+      <div className="relative hidden md:flex flex-col items-left">
         <div className="-mb-1">{user.username}</div>
         <div className="text-sm text-gray-300">Joined {user.creationTime}</div>
       </div>

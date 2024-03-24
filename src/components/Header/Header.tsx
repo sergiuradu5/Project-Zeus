@@ -3,7 +3,7 @@ import { BsFillChatFill } from "react-icons/bs";
 import { FiList } from "react-icons/fi";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import reactLogo from "../../assets/react-logo-white.png";
-import { BE_signOut } from "../../backend/queries";
+import { BE_signOut } from "../../backend/user-queries";
 import { useAppDispatch, useAppSelector } from "../../hooks/redux-hooks";
 import Icon from "../UI/Icon";
 import Spinner from "../UI/Spinner";
@@ -44,8 +44,12 @@ const Header = (props: HeaderProps) => {
 
   return (
     <>
-      <div className="flex flex-wrap sm:flex-row gap-3 items-center justify-between drop-shadow-md bg-gradient-to-r from-myBlue to-myPink px-5 py-5 md:py-2 text-white">
-        <img className="w-[80px] cursor-pointer" src={reactLogo} alt="logo" />
+      <div className="z-10 flex flex-wrap sm:flex-row gap-3 items-center justify-between drop-shadow-md bg-gradient-to-r from-myBlue to-myPink px-5 py-5 md:py-2 text-white">
+        <img
+          className="w-[50px] md:w-[80px] cursor-pointer"
+          src={reactLogo}
+          alt="logo"
+        />
         <div className="flex items-center justify-center gap-3 flex-wrap">
           {listPageComponents}
           {profilePageComponents}
