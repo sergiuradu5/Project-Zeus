@@ -10,6 +10,7 @@ const Button = ({
   secondary = false,
   loading = false,
   children,
+  disabled = false,
   ...otherProps
 }: ButtonProps) => {
   return (
@@ -22,6 +23,7 @@ const Button = ({
           : "bg-myBlue hover:bg-myBlueDark"
       }
       ${loading ? "cursor-wait" : ""}
+      ${disabled ? "cursor-not-allowed bg-gray-400 hover:bg-gray-600" : ""}
       ${className}`}
       disabled={loading}
       {...otherProps}

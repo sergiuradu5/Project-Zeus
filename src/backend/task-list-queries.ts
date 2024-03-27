@@ -17,6 +17,7 @@ import {
   addTaskList,
   defaultTaskList,
   deleteTaskList,
+  deleteTaskLists,
   setTaskLists,
   updateTaskList,
 } from "../store/tasks/task-list-slice";
@@ -26,7 +27,7 @@ import { TaskType } from "../types/task-type";
 import { toastErr } from "../utils/toast";
 import { db } from "./firebase";
 import { FIREBASE_TASK_LISTS_COLL } from "./firebase-constants";
-import { BE_bulkDeleteTasks } from "./task-queries";
+import { BE_bulkDeleteTasks, getTasks } from "./task-queries";
 
 export const BE_addTaskList = async (
   dispatch: AppDispatch,
@@ -120,10 +121,10 @@ export const BE_updateTaskList = async (
 export const BE_deleteTaskList = async (
   taskListId: string,
   tasks: TaskType[],
-  dispatch: AppDispatch,
-  setLoading: SetLoadingType
+  dispatch?: AppDispatch,
+  setLoading?: SetLoadingType
 ) => {
-  setLoading(true);
+  setLoading?.(true);
   const taskIds: string[] = [];
   tasks?.forEach(({ id }) => {
     if (id) taskIds.push(id);
@@ -137,7 +138,31 @@ export const BE_deleteTaskList = async (
   const deletedTaskListDoc = await getDoc(taskListRef);
 
   if (!deletedTaskListDoc.exists()) {
-    setLoading(false);
-    dispatch(deleteTaskList({ id: taskListId }));
+    setLoading?.(false);
+    dispatch?.(deleteTaskList({ id: taskListId }));
   }
+};
+
+export const BE_bulkDeleteTaskLists = async (
+  dispatch: AppDispatch,
+  setLoading?: SetLoadingType
+) => {
+  setLoading?.(true);
+  const q = query(
+    collection(db, FIREBASE_TASK_LISTS_COLL),
+    where("userId", "==", getStorageUser()!.id),
+    orderBy("creationTime", "desc")
+  );
+
+  const querySnapshot = await getDocs(q);
+  const promises: Promise<void>[] = [];
+  querySnapshot.forEach(async (doc) => {
+    const taskListId = doc.data().id;
+    const tasks = await getTasks(taskListId);
+    const promise = BE_deleteTaskList(taskListId, tasks);
+    promises.push(promise);
+  });
+
+  await Promise.all(promises);
+  dispatch(deleteTaskLists());
 };

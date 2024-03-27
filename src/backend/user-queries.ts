@@ -1,9 +1,13 @@
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
   signInWithEmailAndPassword,
   signOut,
+  updateEmail,
+  updatePassword,
 } from "firebase/auth";
 import {
+  deleteDoc,
   doc,
   getDoc,
   serverTimestamp,
@@ -16,8 +20,12 @@ import {
   removeStorageUser,
 } from "../local-storage/local-storage-functions";
 import { AppDispatch } from "../store/store";
-import { clearTaskLists } from "../store/tasks/task-list-slice";
-import { defaultUser, setUser } from "../store/user/user-slice";
+import { deleteTaskLists } from "../store/tasks/task-list-slice";
+import {
+  defaultUser,
+  deleteUser as deleteUserAction,
+  setUser,
+} from "../store/user/user-slice";
 import { AuthDataType } from "../types/auth-data-type";
 import { SetLoadingType } from "../types/set-loading-type";
 import { UserType } from "../types/user-type";
@@ -27,6 +35,7 @@ import { generateAvatarImgLink } from "../utils/generate-avatar";
 import { toastErr, toastSucc } from "../utils/toast";
 import { auth, db } from "./firebase";
 import { FIREBASE_USERS_COLL } from "./firebase-constants";
+import { BE_bulkDeleteTaskLists } from "./task-list-queries";
 
 export const BE_signUp = async (
   { email, password, confirmPassword }: AuthDataType,
@@ -104,7 +113,7 @@ export const BE_signIn = async (
 
 export const BE_signOut = async (
   dispatch: AppDispatch,
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  setLoading: SetLoadingType,
   goTo: NavigateFunction
 ) => {
   setLoading(true);
@@ -112,7 +121,7 @@ export const BE_signOut = async (
     .then(async () => {
       await updateUserInfo({ isOnline: false });
       dispatch(setUser(defaultUser));
-      dispatch(clearTaskLists());
+      dispatch(deleteTaskLists());
       removeStorageUser();
       goTo("/auth");
       setLoading(false);
@@ -122,6 +131,78 @@ export const BE_signOut = async (
       setLoading(false);
       toastErr(e);
     });
+};
+
+export const BE_updateUser = async (
+  {
+    email,
+    username,
+    password,
+    img,
+  }: { email?: string; username?: string; password?: string; img?: string },
+  dispatch: AppDispatch,
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => {
+  setLoading(true);
+  const id = getStorageUser()?.id;
+  const user = auth.currentUser;
+  if (id && user) {
+    if (email) {
+      updateEmail(user, email)
+        .then(() => {
+          toastSucc("Email updated successfully");
+        })
+        .catch((e) => {
+          CatchError(e);
+        });
+    }
+    if (password) {
+      updatePassword(user, password)
+        .then(() => {
+          toastSucc("Password updated successfully");
+        })
+        .catch((e) => {
+          CatchError(e);
+        });
+    }
+
+    if (username || img) {
+      await updateUserInfo({ username, img });
+      toastSucc("Profile updated successfully");
+    }
+
+    const userInfo = await getUserInfo(user.uid);
+    dispatch(setUser(userInfo));
+    setLoading(false);
+  } else {
+    toastErr(`${BE_updateUser}: id not found`);
+    setLoading(false);
+  }
+};
+
+export const BE_deleteUser = async (
+  dispatch: AppDispatch,
+  setLoading: SetLoadingType
+) => {
+  setLoading(true);
+  try {
+    await BE_bulkDeleteTaskLists(dispatch);
+    const currentUser = auth.currentUser;
+    const userId = getStorageUser()?.id;
+    if (currentUser && userId) {
+      const userRef = doc(db, FIREBASE_USERS_COLL, userId);
+      await deleteDoc(userRef);
+      await deleteUser(currentUser);
+      toastSucc("Profile deleted successfully");
+      dispatch(deleteUserAction());
+      setLoading(false);
+    } else {
+      toastErr(`${BE_deleteUser}: current user not found`);
+      setLoading(false);
+    }
+  } catch (e) {
+    CatchError(e as any);
+  }
 };
 
 const addUserToCollection = async ({

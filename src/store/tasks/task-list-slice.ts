@@ -30,7 +30,7 @@ export const taskListSlice = createSlice({
       state.taskLists = action.payload;
     },
 
-    clearTaskLists: (state) => {
+    deleteTaskLists: (state) => {
       state.taskLists = [];
     },
 
@@ -220,5 +220,5 @@ export const {
   setTasks,
   deleteTask,
   toggleCollapseAllTasks,
-  clearTaskLists,
+  deleteTaskLists,
 } = taskListSlice.actions;

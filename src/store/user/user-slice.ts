@@ -44,6 +44,13 @@ export const userSlice = createSlice({
 
       state.currentUser = action.payload;
     },
+
+    deleteUser: (state) => {
+      localStorage.removeItem(LOCAL_STORAGE_USER_ITEM);
+      state.currentUser = defaultUser;
+    },
+
+
     setUsers: (state, action) => {},
   },
   extraReducers: (builder) => {
@@ -53,4 +60,4 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setUser, setUsers } = userSlice.actions;
+export const { setUser, deleteUser, setUsers } = userSlice.actions;
