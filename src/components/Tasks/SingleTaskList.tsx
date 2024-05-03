@@ -102,8 +102,12 @@ const SingleTaskList = forwardRef<HTMLDivElement, SingleTaskListProps>(
     );
 
     return (
-      <div key={id} className="relative" ref={ref}>
-        <div className="bg-[#d4f0f9] w-full md:w-[400px] drop-shadow-md rounded-md min-h-[150px] overflow-hidden">
+      <div
+        key={id}
+        className="relative w-full max-w-[400px] md:w-[400px]"
+        ref={ref}
+      >
+        <div className="bg-[#d4f0f9] drop-shadow-md rounded-md min-h-[150px] overflow-hidden">
           <div className="flex flex-wrap justify-center items-center bg-gradient-to-tr from-myBlue to-myPink text-white bg-opacity-20 p-3">
             {editMode ? (
               <input

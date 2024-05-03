@@ -50,8 +50,9 @@ export const userSlice = createSlice({
       state.currentUser = defaultUser;
     },
 
-
-    setUsers: (state, action) => {},
+    setUsers: (state, action: PayloadAction<{ users: UserType[] }>) => {
+      state.users = action.payload.users;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(signInThunk.fulfilled, (state, action) => {

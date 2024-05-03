@@ -7,29 +7,36 @@ import {
   updatePassword,
 } from "firebase/auth";
 import {
+  collection,
   deleteDoc,
   doc,
   getDoc,
+  onSnapshot,
+  orderBy,
+  query,
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from "firebase/firestore";
 import { NavigateFunction } from "react-router-dom";
 import {
   getStorageUser,
   removeStorageUser,
 } from "../local-storage/local-storage-functions";
+import { setIsAuthenticated } from "../store/auth/auth-slice";
 import { AppDispatch } from "../store/store";
 import { deleteTaskLists } from "../store/tasks/task-list-slice";
 import {
   defaultUser,
   deleteUser as deleteUserAction,
   setUser,
+  setUsers,
 } from "../store/user/user-slice";
 import { AuthDataType } from "../types/auth-data-type";
 import { SetLoadingType } from "../types/set-loading-type";
 import { UserType } from "../types/user-type";
-import { CatchError } from "../utils/catch-error";
+import { catchError } from "../utils/catch-error";
 import convertTime from "../utils/convert-time";
 import { generateAvatarImgLink } from "../utils/generate-avatar";
 import { toastErr, toastSucc } from "../utils/toast";
@@ -63,6 +70,7 @@ export const BE_signUp = async (
           };
           const userInfo = await addUserToCollection(userToAddToCollection);
           dispatch(setUser(userInfo));
+          dispatch(setIsAuthenticated(true));
           setIsLoading(false);
           toastSucc("Signup successful");
           goTo("/dashboard");
@@ -70,7 +78,8 @@ export const BE_signUp = async (
           // ...
         })
         .catch((error) => {
-          CatchError(error);
+          dispatch(setIsAuthenticated(false));
+          catchError(error);
           setIsLoading(false);
         });
     } else {
@@ -99,14 +108,15 @@ export const BE_signIn = async (
       const userInfo = await getUserInfo(user.uid);
       toastSucc("Sign in successful");
       setIsLoading(false);
-
+      dispatch(setIsAuthenticated(true));
       dispatch(setUser(userInfo));
       resetForm();
       goTo("/dashboard");
       // ...
     })
     .catch((error) => {
-      CatchError(error);
+      catchError(error);
+      dispatch(setIsAuthenticated(false));
       setIsLoading(false);
     });
 };
@@ -117,20 +127,61 @@ export const BE_signOut = async (
   goTo: NavigateFunction
 ) => {
   setLoading(true);
-  signOut(auth)
+  updateUserInfo({ isOnline: false })
     .then(async () => {
-      await updateUserInfo({ isOnline: false });
-      dispatch(setUser(defaultUser));
-      dispatch(deleteTaskLists());
-      removeStorageUser();
-      goTo("/auth");
-      setLoading(false);
-      toastSucc("Sign out successful");
+      signOut(auth)
+        .then(async () => {
+          dispatch(setUser(defaultUser));
+          dispatch(deleteTaskLists());
+          removeStorageUser();
+          dispatch(setIsAuthenticated(false));
+          goTo("/auth");
+          setLoading(false);
+          toastSucc("Sign out successful");
+        })
+        .catch((e) => {
+          catchError(e);
+          setLoading(false);
+        });
     })
     .catch((e) => {
       setLoading(false);
-      toastErr(e);
+      catchError(e);
     });
+};
+
+export const BE_getAllUsers = async (
+  dispatch: AppDispatch,
+  setLoading: SetLoadingType
+) => {
+  setLoading(true);
+  const q = query(
+    collection(db, FIREBASE_USERS_COLL),
+    where("__name__", "!=", getStorageUser()!.id),
+    orderBy("isOnline", "desc")
+  );
+
+  onSnapshot(q, (usersSnapshot) => {
+    const users: UserType[] = [];
+
+    usersSnapshot.forEach((userDoc) => {
+      const { img, isOnline, username, email, bio, creationTime, lastSeen } =
+        userDoc.data();
+      users.push({
+        id: userDoc.id,
+        img,
+        isOnline,
+        username,
+        email,
+        bio,
+        creationTime: convertTime(creationTime.toDate()),
+        lastSeen: convertTime(lastSeen.toDate()),
+      });
+    });
+
+    dispatch(setUsers({ users }));
+    setLoading(false);
+  });
 };
 
 export const BE_updateUser = async (
@@ -153,7 +204,7 @@ export const BE_updateUser = async (
           toastSucc("Email updated successfully");
         })
         .catch((e) => {
-          CatchError(e);
+          catchError(e);
         });
     }
     if (password) {
@@ -162,7 +213,7 @@ export const BE_updateUser = async (
           toastSucc("Password updated successfully");
         })
         .catch((e) => {
-          CatchError(e);
+          catchError(e);
         });
     }
 
@@ -201,7 +252,8 @@ export const BE_deleteUser = async (
       setLoading(false);
     }
   } catch (e) {
-    CatchError(e as any);
+    catchError(e as any);
+    setLoading(false);
   }
 };
 
@@ -229,13 +281,18 @@ const addUserToCollection = async ({
   return getUserInfo(id);
 };
 
-const getUserInfo = async (id: string): Promise<UserType> => {
+export const getUserInfo = async (
+  id: string,
+  setLoading?: SetLoadingType
+): Promise<UserType> => {
+  setLoading?.(true);
+
   const user = await getDoc(doc(db, FIREBASE_USERS_COLL, id));
 
   if (user.exists()) {
     const { img, isOnline, username, email, bio, creationTime, lastSeen } =
       user.data();
-
+    setLoading?.(false);
     return {
       id: user.id,
       img,
@@ -250,11 +307,12 @@ const getUserInfo = async (id: string): Promise<UserType> => {
     };
   } else {
     toastErr("getUserInfo: User not found");
+    setLoading?.(false);
     return defaultUser;
   }
 };
 
-const updateUserInfo = async ({
+export const updateUserInfo = async ({
   id,
   username,
   img,

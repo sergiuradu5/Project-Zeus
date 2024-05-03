@@ -1,5 +1,7 @@
 import moment from "moment";
 
 export default function convertTime(date: Date) {
-  return moment(date).format("llll");
+  if (date) {
+    return moment(date).format("llll");
+  } else return undefined;
 }

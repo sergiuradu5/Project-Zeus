@@ -23,11 +23,12 @@ const DeleteProfileModal = ({
     <Modal
       ref={modalRef}
       onClose={onClose}
-      className="bg-white flex flex-col gap-5 
+      dialogClassName="bg-white rounded-xl shadow-md"
+      contentClassName="flex flex-col gap-5 
     shadow-md max-w-xl rounded-xl py-5 px-6 md:py-10 md:px-14 md:m-auto text-center"
     >
       Are you sure you want to delete user profile?
-      <div className="flex flex-col gap-1">
+      <div className="flex gap-1">
         <Button loading={loading} secondary onClick={onConfirm}>
           Yes, Delete Profile
         </Button>

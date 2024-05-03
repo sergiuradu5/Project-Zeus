@@ -149,7 +149,6 @@ export const taskListSlice = createSlice({
           const updatedTask = { ...taskData, id: taskId };
           if (taskList.tasks) {
             taskList.tasks[taskIndex] = updatedTask;
-            console.log("task updated", updatedTask);
           }
         }
       }

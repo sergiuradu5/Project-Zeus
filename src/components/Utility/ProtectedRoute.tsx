@@ -1,9 +1,8 @@
 import { ReactNode } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAppSelector } from "../../hooks/redux-hooks";
 type ProtectedRouteProps = {
   redirectPath: string;
-  isAllowed: boolean
+  isAllowed: boolean;
   children?: ReactNode;
 };
 

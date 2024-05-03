@@ -11,10 +11,11 @@ const FirebaseErrorCodesAndMessages: Record<string, string> = {
     "Log out and log in before updating your profile",
   "auth/invalid-credential": "Invalid credentials",
   "auth/too-many-requests": "Too many requests, please try again later",
+  "permission-denied": "Permission denied",
   unavailable: "Firebase client is offline",
 };
 
-export const CatchError = ({
+export const catchError = ({
   code,
   message: defaultErrorMessage,
 }: {
